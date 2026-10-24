@@ -10,17 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node & Chrome
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - run: npm install || true
-      - name: Run Animation Render
+          node-version: 20
+
+      - name: Install Dependencies & FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg chromium-browser
+          npm init -y
+          npm install canvas fluent-ffmpeg
+
+      - name: Run Engine & Render MP4
         run: |
           mkdir -p output
-          echo "Pipeline Ready"
-      - uses: actions/upload-artifact@v4
+          ffmpeg -y -f lavfi -i color=c=black:s=1080x1920:d=5 -i input/audio.mp3 -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest output/anime_reel.mp4
+
+      - name: Upload Video Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: Anime-Reel-Output
-          path: output/
-          
+          name: Anime-Reel-Video
+          path: output/anime_reel.mp4
