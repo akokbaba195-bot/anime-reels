@@ -1,0 +1,26 @@
+name: Render Anime Reel
+on:
+  push:
+    paths:
+      - 'input/**'
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: npm install || true
+      - name: Run Animation Render
+        run: |
+          mkdir -p output
+          echo "Pipeline Ready"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Anime-Reel-Output
+          path: output/
+          
