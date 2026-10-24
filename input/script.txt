@@ -1,0 +1,4 @@
+Speaker: Hero
+Emotion: confident
+Dialogue: Agar zindagi mein kuch bada karna hai, toh bahane banana aaj hi band karo!
+VFX: speed_lines
