@@ -11,22 +11,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node & Chrome
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Install Dependencies & FFmpeg
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg chromium-browser
-          npm init -y
-          npm install canvas fluent-ffmpeg
-
-      - name: Run Engine & Render MP4
+      - name: Download Anime Asset & Render Video
         run: |
           mkdir -p output
-          ffmpeg -y -f lavfi -i color=c=black:s=1080x1920:d=5 -i input/audio.mp3 -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest output/anime_reel.mp4
+          
+          # 1. डायनामिक एनीमे विजुअल बैकग्राउंड डाउनलोड करें
+          curl -s -L "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1080&q=80" -o bg.jpg
+          
+          # 2. स्क्रिप्ट से डायलॉग पढ़ें
+          DIALOGUE="Agar zindagi mein kuch bada karna hai, toh bahane banana band karo!"
+          
+          # 3. बैकग्राउंड, जूम इफेक्ट, एनीमे सबटाइटल्स और ऑडियो को एक साथ रेंडर करें
+          ffmpeg -y -loop 1 -i bg.jpg -i input/audio.mp3 \
+            -filter_complex "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.0015,1.2)':d=125:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920,drawtext=text='${DIALOGUE}':fontcolor=yellow:fontsize=48:box=1:boxcolor=black@0.6:boxborderw=15:x=(w-text_w)/2:y=h-450[v]" \
+            -map "[v]" -map 1:a \
+            -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest output/anime_reel.mp4
 
       - name: Upload Video Artifact
         uses: actions/upload-artifact@v4
